@@ -1,4 +1,15 @@
 node_modules
-dist
+.DS_Store
+.turbo
 .next
+dist
+coverage
+.expo
+.expo-shared
+backend/generated
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+*.log
 .env
+
+.DS_Store

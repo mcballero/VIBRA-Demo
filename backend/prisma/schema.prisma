@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  passwordHash String
+  name         String
+  city         String?
+  latitude     Float?
+  longitude    Float?
+  interests    String[]
+  embedding    Unsupported("vector(8)")?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  rsvps        RSVP[]
+  feedback     Feedback[]
+
+  @@index([email])
+}
+
+model Event {
+  id              String       @id @default(cuid())
+  title           String
+  description     String
+  category        String
+  venueName       String
+  city            String
+  latitude        Float
+  longitude       Float
+  startsAt        DateTime
+  popularityScore Int          @default(0)
+  trendingScore   Int          @default(0)
+  imageUrl        String?
+  embedding       Unsupported("vector(8)")?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  rsvps           RSVP[]
+  feedback        Feedback[]
+
+  @@index([category])
+  @@index([city])
+}
+
+model RSVP {
+  id        String     @id @default(cuid())
+  userId    String
+  eventId   String
+  status    RsvpStatus @default(GOING)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event     Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@index([userId])
+  @@index([eventId])
+}
+
+model Feedback {
+  id        String           @id @default(cuid())
+  userId    String
+  eventId   String
+  reaction  FeedbackReaction
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event     Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId, reaction])
+  @@index([userId])
+  @@index([eventId])
+  @@index([reaction])
+}
+
+enum RsvpStatus {
+  GOING
+  INTERESTED
+}
+
+enum FeedbackReaction {
+  LIKE
+  DISLIKE
+  ATTENDED
+}
