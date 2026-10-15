@@ -1,4 +1,6 @@
+import 'dotenv/config';
 import { PrismaClient } from "@prisma/client";
+
 
 const prisma = new PrismaClient();
 
@@ -72,18 +74,19 @@ async function main() {
   ];
 
   for (const [index, event] of events.entries()) {
+    const { embedding, ...eventData } = event;
+
     await prisma.event.upsert({
       where: { id: `seed-event-${index + 1}` },
       update: {
-        ...event,
-        embedding: undefined
+        ...eventData,
       },
       create: {
         id: `seed-event-${index + 1}`,
-        ...event,
-        embedding: undefined
+        ...eventData,
       }
     });
+
 
     await prisma.$executeRawUnsafe(
       `UPDATE "Event" SET "embedding" = $1::vector WHERE "id" = $2`,
